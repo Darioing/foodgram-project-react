@@ -64,11 +64,10 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }} 
           stack_file_name: docker-compose.yaml
           script: |
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:v1.0
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram-project:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram-frontend:v1.0
             sudo docker-compose stop
             sudo docker-compose rm backend
             touch .env
