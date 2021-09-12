@@ -2,7 +2,6 @@ name: Foodgram_project
 
 on: [push]
 
-
 jobs:
   tests:
     runs-on: ubuntu-latest
