@@ -1,8 +1,8 @@
-  
 FROM python:3.8.5
 WORKDIR /code
+COPY requirements.txt .
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install nginx && apt-get -y install postgresql && apt-get install -y gunicorn && pip3 install -r ./requirements.txt
 COPY . .
-RUN pip install --upgrade pip && pip install -r /code/requirements.txt
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
