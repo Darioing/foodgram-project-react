@@ -41,7 +41,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          #context: ./backend/
+          context: ./backend/
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram-project:latest
    
   deploy:
