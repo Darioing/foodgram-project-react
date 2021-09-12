@@ -1,7 +1,9 @@
-FROM python:3.8.5 
- 
-WORKDIR /code 
-COPY requirements.txt .
-RUN pip install -r ./requirements.txt 
+  
+FROM python:3.8.5
+WORKDIR /code
 COPY . .
+RUN pip install --upgrade pip && pip install -r /code/requirements.txt
+ADD entrypoint.sh /entrypoint.sh
+RUN chmod a+x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 CMD gunicorn api_foodgram.wsgi:application --bind 0.0.0.0:8000
