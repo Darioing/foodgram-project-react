@@ -28,7 +28,7 @@ services:
   frontend:
     image: darioing/foodgram-frontend:v1.0
     volumes:
-      - frontend_data:/app/build/
+      - frontend_data:/result_build
   nginx:
     image: nginx:1.19.3
     ports:
@@ -38,9 +38,14 @@ services:
       - frontend_data:/usr/share/nginx/html/
       - ./backend/docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
       - ./backend/docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
-      - static_value:/code/backend_static/
-      - media_value:/code/backend_media/
+      - static_value:/code/bcknd_static/
+      - media_value:/code/bcknd_media/
     restart: always
     depends_on:
       - backend
       - frontend
+volumes:
+  frontend_data:
+  postgres_data:
+  static_value:
+  media_value:
