@@ -18,7 +18,7 @@ class FollowAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'user',
-        'author',
+        'following',
     )
     empty_value_display = '--пусто--'
 
