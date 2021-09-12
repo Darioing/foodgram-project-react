@@ -9,5 +9,5 @@ router.register('follows', FollowViewSet, basename='Follows')
 
 urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
-    path('', include('router')),
+    path('', include(router.urls)),
 ]
