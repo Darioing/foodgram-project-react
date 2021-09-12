@@ -58,7 +58,7 @@ jobs:
           stack_file_name: docker-compose.yaml
           script: |
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram-project:latest
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram-frontend:v1.0
+            #sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram-frontend:v1.0
             sudo docker-compose stop
             sudo docker-compose rm backend
             touch .env
