@@ -20,11 +20,13 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password, username, **kwargs):
+    def create_superuser(self, email, password, username, first_name, last_name, **kwargs):
         user = self.create_user(
             email,
             password,
             username,
+            first_name,
+            last_name,
             **kwargs,
         )
         user.is_superuser = True
@@ -38,7 +40,7 @@ class User(AbstractUser):
     Определяем наш пользовательский класс User.
     """
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     objects = UserManager()
     first_name = models.CharField(
         max_length=150,
