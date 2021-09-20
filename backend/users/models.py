@@ -71,10 +71,6 @@ class User(AbstractUser):
         help_text='Введите ваш пароль',
     )
 
-    class Meta:
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
-
 
 class Follow(models.Model):
     user = models.ForeignKey(

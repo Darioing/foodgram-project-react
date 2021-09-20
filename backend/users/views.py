@@ -1,38 +1,53 @@
 from django.contrib.auth import get_user_model
-from rest_framework import filters, permissions
-from rest_framework.permissions import AllowAny
+from django.shortcuts import get_object_or_404
+from djoser.views import UserViewSet
+from rest_framework import permissions, status
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
-from .custom_viewsets import BaseModelViewSet
 from .models import Follow
-from .serializers import (FollowSerializer, UserRegisterSerializer,
-                          UserSerializer)
+from .serializers import FollowSerializer, ShowFollowsSerializer
 
 User = get_user_model()
 
 
-class UserViewSet(BaseModelViewSet):
-    queryset = User.objects.all()
-    permission_classes = (AllowAny,)
-    lookup_field = 'username'
-    filter_backends = [filters.SearchFilter]
-    search_fields = [
-        'username',
-    ]
+class UserViewSet(UserViewSet):
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return UserSerializer
-        return UserRegisterSerializer
+    @action(
+        detail=True, methods=['GET', 'DELETE'],
+        url_path='subscribe', url_name='subscribe',
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def subscribe(self, request, id):
+        following = get_object_or_404(User, id=id)
+        serializer = FollowSerializer(
+            data={
+                'user': request.user.id,
+                'following': id,
+            }
+        )
+        if request.method == 'GET':
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=request.user)
+            serializer = ShowFollowsSerializer(following)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        get_object_or_404(Follow, user=request.user, following__id=id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-class FollowViewSet(BaseModelViewSet):
-    serializer_class = FollowSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['user__username', 'following__username']
-
-    def get_queryset(self):
-        return Follow.objects.filter(following=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    @action(
+        detail=False, methods=['GET'],
+        url_path='subscriptions', url_name='subscriptions',
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def show_follows(self, request):
+        queryset = User.objects.filter(following__user=request.user)
+        paginator = PageNumberPagination()
+        paginator.page_size = 6
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = ShowFollowsSerializer(
+            result_page,
+            many=True,
+            context={'user': request.user},
+        )
+        return paginator.get_paginated_response(serializer.data)

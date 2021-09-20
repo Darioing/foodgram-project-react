@@ -12,14 +12,14 @@ router.register('ingredients', IngredientViewSet, basename='ingredients')
 
 urlpatterns = [
     path(
-        'recipes/<int:recipe_id>/shopping_cart/',
-        ShoppingCartView.as_view(),
-        name='shopping_cart'
+         'recipes/<int:recipe_id>/shopping_cart/',
+         ShoppingCartView.as_view(),
+         name='shopping_cart',
     ),
     path(
-        'recipes/download_shopping_cart/',
-        download_shopping_cart,
-        name='download_shopping_cart'
+         'recipes/download_shopping_cart/',
+         download_shopping_cart,
+         name='download_shopping_cart',
     ),
     path('', include(router.urls)),
 ]

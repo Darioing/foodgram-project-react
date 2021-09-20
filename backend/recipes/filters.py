@@ -4,22 +4,26 @@ from .models import Ingredient, Recipe
 
 
 class IngredientNameFilter(filters.FilterSet):
-    name = filters.CharFilter(field_name='name', lookup_expr='istartswith')
+    name = filters.CharFilter(
+        field_name='name', lookup_expr='istartswith'
+    )
 
     class Meta:
         model = Ingredient
-        fields = (
+        fields = [
             'name',
             'measurement_unit',
-        )
+        ]
 
 
 class RecipeFilter(filters.FilterSet):
-    tags = filters.AllValuesMultipleFilter(field_name='tags__slug')
+    tags = filters.AllValuesMultipleFilter(
+        field_name='tags__slug'
+    )
 
     class Meta:
         model = Recipe
-        fields = (
+        fields = [
             'author',
             'tags',
-        )
+        ]

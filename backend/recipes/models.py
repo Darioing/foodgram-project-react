@@ -14,12 +14,12 @@ class Tag(models.Model):
         unique=True,
     )
     color = ColorField(
-        verbose_name='Цвет в HEX формате',
-        help_text='Введите цвет тега в HEX формате',
+        verbose_name='Цвет в HEX',
+        help_text='Введите цвет тега в HEX',
         max_length=7,
         null=True,
     )
-    slug = models.SlugField(
+    slug = models.CharField(
         verbose_name='slug',
         max_length=200,
         unique=True,
@@ -45,35 +45,37 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    tags = models.ManyToManyField(
-        Tag,
-        verbose_name='Теги',
-        help_text='Выберите один или несколько тегов'
-    )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='recipes', verbose_name='Автор рецепта'
     )
-    ingredients = models.ManyToManyField(
-        Ingredient, through='IngredientForRecipe',
-        verbose_name='Ингредиенты',
-        help_text='Укажите ингредиенты и их количество',
-    )
     name = models.CharField(
-        max_length=50, verbose_name='Название рецепта'
+        max_length=200, verbose_name='Название рецепта'
     )
     image = models.ImageField(
         verbose_name='Картинка',
         help_text='Выберите изображение'
     )
     text = models.TextField(verbose_name='Описание рецепта')
+    ingredients = models.ManyToManyField(
+        Ingredient, through='RecipeIngredients',
+        verbose_name='Ингредиенты',
+        help_text='Укажите ингредиенты и их количество',
+    )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления', default=1,
-        validators=[MinValueValidator(1, 'Значение не может быть меньше 1')]
+        validators=[
+            MinValueValidator(1, 'Значение не может быть меньше 1')
+        ]
+    )
+    tags = models.ManyToManyField(
+        Tag,
+        verbose_name='Теги',
+        help_text='Выберите один или несколько тегов'
     )
 
 
-class IngredientForRecipe(models.Model):
+class RecipeIngredients(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
@@ -99,7 +101,8 @@ class Favorites(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'recipe'], name='unique_favorite',
+                fields=['user', 'recipe'],
+                name='unique_favorite',
             )
         ]
 
@@ -109,8 +112,9 @@ class Purchase(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'recipe'], name='unique_shopping_cart'
-            )
-        ]
+            constraints = [
+                models.UniqueConstraint(
+                    fields=['user', 'recipe'],
+                    name='unique_shopping_cart',
+                )
+            ]
