@@ -157,7 +157,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             'image',
             'text',
             'cooking_time',
-            'pub_date',
         ]
 
     def get_is_favorited(self, obj):
