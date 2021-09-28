@@ -7,7 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import Follow
-from .serializers import FollowSerializer, ShowFollowsSerializer
+from .serializers import FollowSerializer, ShowFollowSerializer
 
 User = get_user_model()
 
@@ -21,18 +21,19 @@ class UserViewSet(UserViewSet):
     )
     def subscribe(self, request, id):
         following = get_object_or_404(User, id=id)
+        user = request.user
         serializer = FollowSerializer(
             data={
-                'user': request.user.id,
+                'user': user.id,
                 'following': id,
-            }
+            },
         )
         if request.method == 'GET':
             serializer.is_valid(raise_exception=True)
-            serializer.save(user=request.user)
-            serializer = ShowFollowsSerializer(following)
+            serializer.save(user=user)
+            serializer = ShowFollowSerializer(following)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        get_object_or_404(Follow, user=request.user, following__id=id).delete()
+        get_object_or_404(Follow, user=user, following__id=id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -41,13 +42,16 @@ class UserViewSet(UserViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def show_follows(self, request):
-        queryset = User.objects.filter(following__user=request.user)
+        user = request.user
+        queryset = User.objects.filter(following__user=user)
         paginator = PageNumberPagination()
         paginator.page_size = 6
-        result_page = paginator.paginate_queryset(queryset, request)
-        serializer = ShowFollowsSerializer(
-            result_page,
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = ShowFollowSerializer(
+            page,
             many=True,
-            context={'user': request.user},
+            context={
+                'user': user
+            },
         )
         return paginator.get_paginated_response(serializer.data)

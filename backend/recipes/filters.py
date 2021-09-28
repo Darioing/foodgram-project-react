@@ -3,7 +3,7 @@ import django_filters as filters
 from .models import Ingredient, Recipe
 
 
-class IngredientNameFilter(filters.FilterSet):
+class IngredientFilter(filters.FilterSet):
     name = filters.CharFilter(
         field_name='name', lookup_expr='istartswith'
     )

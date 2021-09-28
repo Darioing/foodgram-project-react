@@ -38,9 +38,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """
-    Определяем наш пользовательский класс User.
-    """
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     objects = UserManager()
@@ -64,7 +61,8 @@ class User(AbstractUser):
         unique=True,
         max_length=254,
         verbose_name='Почта',
-        help_text='Введите вашу почту')
+        help_text='Введите вашу почту',
+    )
     password = models.CharField(
         max_length=150,
         verbose_name='Пароль',

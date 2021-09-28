@@ -23,9 +23,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'colorfield',
+    'import_export',
 ]
-
-AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,14 +57,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'api_foodgram.wsgi.application'
 
 AUTH_USER_MODEL = 'users.User'
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 
 DATABASES = {
     'default': {
@@ -109,29 +100,20 @@ USE_TZ = True
 STATIC_URL = '/bcknd_static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'bcknd_static')
 
+MEDIA_URL = '/bcknd_media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'bcknd_media')
+
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
     'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.TokenAuthentication'],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ],
 }
 
 
-MEDIA_URL = '/bcknd_media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'bcknd_media')
-
-
 DJOSER = {
-    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': False,
-    'SERIALIZERS': {
-        'users': 'users.serializers.UserSerializer',
-    },
+    'SERIALIZERS': {'users': 'users.serializers.UserSerializer'},
     'PERMISSIONS': {
         'token_create': ['rest_framework.permissions.AllowAny'],
         'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
@@ -151,3 +133,5 @@ DJOSER = {
     'HIDE_USERS': False,
     'USER_ID_FIELD': 'id',
 }
+
+RECIPES_LIMIT = 6

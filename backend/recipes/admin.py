@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ImportMixin
 
-from .models import Favorites, Ingredient, RecipeIngredients, Recipe, Tag
+from .models import Favorites, Ingredient, RecipeIngredient, Recipe, Tag
 from .resources import IngredientResource
 
 
@@ -13,7 +13,7 @@ class FavoriteAdmin(admin.ModelAdmin):
     )
 
 
-class RecipeIngredientsAdmin(admin.ModelAdmin):
+class RecipeIngredientAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'ingredient',
@@ -53,7 +53,7 @@ class TagAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(RecipeIngredients, RecipeIngredientsAdmin)
+admin.site.register(RecipeIngredient, RecipeIngredientAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
