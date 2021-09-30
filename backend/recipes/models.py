@@ -7,6 +7,7 @@ User = get_user_model()
 
 
 class Tag(models.Model):
+
     name = models.CharField(
         verbose_name='Название',
         help_text='Введите название тега',
@@ -40,11 +41,9 @@ class Ingredient(models.Model):
         help_text='Выберите единицу измерения',
     )
 
-    class Meta:
-        ordering = ['name']
-
 
 class Recipe(models.Model):
+
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='recipes', verbose_name='Автор рецепта'
@@ -63,7 +62,8 @@ class Recipe(models.Model):
         help_text='Укажите ингредиенты и их количество',
     )
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления', default=1,
+        verbose_name='Время приготовления',
+        default=1,
         validators=[
             MinValueValidator(1, 'Значение не может быть меньше 1')
         ]
@@ -76,6 +76,7 @@ class Recipe(models.Model):
 
 
 class RecipeIngredients(models.Model):
+
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
@@ -87,7 +88,8 @@ class RecipeIngredients(models.Model):
         related_name='ingredients_amounts',
     )
     amount = models.PositiveSmallIntegerField(
-        verbose_name='Количество', default=1,
+        verbose_name='Количество',
+        default=1,
         validators=[
             MinValueValidator(1, 'Значение не может быть меньше 1')
         ]
@@ -95,26 +97,36 @@ class RecipeIngredients(models.Model):
 
 
 class Favorites(models.Model):
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     class Meta:
+
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=[
+                    'user',
+                    'recipe',
+                ],
                 name='unique_favorite',
             )
         ]
 
 
 class Purchase(models.Model):
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,)
 
     class Meta:
+
             constraints = [
                 models.UniqueConstraint(
-                    fields=['user', 'recipe'],
+                    fields=[
+                        'user',
+                        'recipe',
+                    ],
                     name='unique_shopping_cart',
                 )
             ]

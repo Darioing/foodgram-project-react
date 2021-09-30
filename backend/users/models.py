@@ -4,9 +4,15 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
+    """
+    Переопределяем User Manager для запроса 
+    дополнительных полей при создании суперпользователя
+    """
+
     def create_user(
         self, email, password, username, first_name, last_name, **kwargs
     ):
+
         if not email:
             raise ValueError('У пользователя должен быть email адрес')
         user = self.model(
@@ -23,6 +29,7 @@ class UserManager(BaseUserManager):
     def create_superuser(
         self, email, password, username, first_name, last_name, **kwargs
     ):
+
         user = self.create_user(
             email,
             password,
@@ -39,8 +46,10 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
     """
-    Определяем наш пользовательский класс User.
+    Переопределяем базовую модель пользователя 
+    добовлением дополнительных полей
     """
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     objects = UserManager()
@@ -73,6 +82,10 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
+    """
+    Модель подписки
+    """
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='follower'
     )

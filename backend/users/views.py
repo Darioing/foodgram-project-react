@@ -41,6 +41,7 @@ class UserViewSet(UserViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def show_follows(self, request):
+
         queryset = User.objects.filter(following__user=request.user)
         paginator = PageNumberPagination()
         paginator.page_size = 6
@@ -48,6 +49,8 @@ class UserViewSet(UserViewSet):
         serializer = ShowFollowsSerializer(
             result_page,
             many=True,
-            context={'user': request.user},
+            context={
+                'user': request.user,
+            },
         )
         return paginator.get_paginated_response(serializer.data)

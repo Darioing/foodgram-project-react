@@ -8,12 +8,11 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from users.serializers import RecipeSubscriptionSerializer
 
 from .filters import IngredientNameFilter, RecipeFilter
-from .models import (Favorites, Ingredient, RecipeIngredients, Purchase,
-                     Recipe, Tag)
+from .models import (Favorites, Ingredient, Purchase, Recipe,
+                     RecipeIngredients, Tag)
 from .permissions import AdminOrAuthorOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           PurchaseSerializer, ReadRecipeSerializer,
@@ -23,6 +22,7 @@ User = get_user_model()
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny, ]
@@ -30,6 +30,7 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
+
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend
     ]
@@ -38,6 +39,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = [AdminOrAuthorOrReadOnly, ]
 
     def get_queryset(self):
+
         queryset = Recipe.objects.all()
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
@@ -61,6 +63,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         return queryset.all()
 
     def get_serializer_class(self):
+
         if self.request.method in ['GET']:
             return ReadRecipeSerializer
         return RecipeSerializer
@@ -69,9 +72,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
             url_path='favorite', url_name='favorite',
             permission_classes=[permissions.IsAuthenticated],
             detail=True)
-    def favorite(self, request, pk):
+    def favorite(self, request, id):
+
         recipe = get_object_or_404(
-            Recipe, id=pk
+            Recipe, id=id
         )
         serializer = FavoriteSerializer(
             data={
@@ -89,13 +93,16 @@ class RecipesViewSet(viewsets.ModelViewSet):
                 serializer.data, status=status.HTTP_201_CREATED
             )
         favorite = get_object_or_404(
-            Favorites, user=request.user, recipe__id=pk
+            Favorites,
+            user=request.user,
+            recipe__id=id
         )
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny, ]
@@ -106,6 +113,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated])
 def download_shopping_cart(request):
+
     user = request.user
     cart = user.purchase_set.all()
     buying_list = {}
@@ -141,10 +149,12 @@ def download_shopping_cart(request):
 
 
 class ShoppingCartView(APIView):
-    permission_classes = [permissions.IsAuthenticated, ]
+
     http_method_names = ['get', 'delete']
+    permission_classes = [permissions.IsAuthenticated, ]
 
     def get(self, request, recipe_id):
+
         user = request.user
         recipe = get_object_or_404(
             Recipe, id=recipe_id
@@ -166,8 +176,13 @@ class ShoppingCartView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, recipe_id):
+
         user = request.user
-        cart = get_object_or_404(Purchase, user=user, recipe__id=recipe_id)
+        cart = get_object_or_404(
+            Purchase,
+            user=user,
+            recipe__id=recipe_id,
+        )
         cart.delete()
         return Response(
             f'Рецепт {cart.recipe} удален из корзины у пользователя {user}, ',

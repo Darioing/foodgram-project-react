@@ -4,7 +4,9 @@ from .models import Ingredient
 
 
 class IngredientResource(resources.ModelResource):
+
     class Meta:
+
         model = Ingredient
         fields = [
             'id',
