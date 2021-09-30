@@ -8,12 +8,12 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from users.serializers import FollowRecipeSerializer
 
-from .custom_viewsets import BaseModelViewSet, RecipeModelViewSet
-from .filters import IngredientFilter, RecipeFilter
-from .models import (Favorites, Ingredient, Purchase, Recipe,
-                     RecipeIngredient, Tag)
+from users.serializers import RecipeSubscriptionSerializer
+
+from .filters import IngredientNameFilter, RecipeFilter
+from .models import (Favorites, Ingredient, RecipeIngredients, Purchase,
+                     Recipe, Tag)
 from .permissions import AdminOrAuthorOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           PurchaseSerializer, ReadRecipeSerializer,
@@ -22,14 +22,14 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
 User = get_user_model()
 
 
-class TagsViewSet(BaseModelViewSet):
+class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny, ]
     pagination_class = None
 
 
-class RecipesViewSet(RecipeModelViewSet):
+class RecipesViewSet(viewsets.ModelViewSet):
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend
     ]
@@ -38,17 +38,16 @@ class RecipesViewSet(RecipeModelViewSet):
     permission_classes = [AdminOrAuthorOrReadOnly, ]
 
     def get_queryset(self):
-        user = self.request.user.id
         queryset = Recipe.objects.all()
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
         )
         is_favorited = self.request.query_params.get('is_favorited')
         cart = Purchase.objects.filter(
-            user=user
+            user=self.request.user.id
         )
         favorite = Favorites.objects.filter(
-            user=user
+            user=self.request.user.id
         )
 
         if is_in_shopping_cart == 'true':
@@ -71,38 +70,37 @@ class RecipesViewSet(RecipeModelViewSet):
             permission_classes=[permissions.IsAuthenticated],
             detail=True)
     def favorite(self, request, pk):
-        user = request.user
         recipe = get_object_or_404(
             Recipe, id=pk
         )
         serializer = FavoriteSerializer(
             data={
-                'user': user.id,
+                'user': request.user.id,
                 'recipe': recipe.id,
             }
         )
         if request.method == 'GET':
             serializer.is_valid(raise_exception=True)
             serializer.save(
-                recipe=recipe, user=user
+                recipe=recipe, user=request.user
             )
-            serializer = FollowRecipeSerializer(recipe)
+            serializer = RecipeSubscriptionSerializer(recipe)
             return Response(
                 serializer.data, status=status.HTTP_201_CREATED
             )
         favorite = get_object_or_404(
-            Favorites, user=user, recipe__id=pk
+            Favorites, user=request.user, recipe__id=pk
         )
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class IngredientsViewSet(BaseModelViewSet):
+class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny, ]
     pagination_class = None
-    filterset_class = IngredientFilter
+    filterset_class = IngredientNameFilter
 
 
 @api_view(['GET', ])
@@ -113,7 +111,7 @@ def download_shopping_cart(request):
     buying_list = {}
     for item in cart:
         recipe = item.recipe
-        ingredients_in_recipe = RecipeIngredient.objects.filter(
+        ingredients_in_recipe = RecipeIngredients.objects.filter(
             recipe=recipe
         )
         for item in ingredients_in_recipe:
@@ -162,17 +160,16 @@ class ShoppingCartView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(
-            recipe=recipe, user=user
+            recipe=recipe, user=request.user
         )
-        serializer = FollowRecipeSerializer(recipe)
+        serializer = RecipeSubscriptionSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, recipe_id):
         user = request.user
-        cart = get_object_or_404(
-            Purchase,
-            user=user,
-            recipe__id=recipe_id,
-        )
+        cart = get_object_or_404(Purchase, user=user, recipe__id=recipe_id)
         cart.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            f'Рецепт {cart.recipe} удален из корзины у пользователя {user}, ',
+            status=status.HTTP_204_NO_CONTENT
+        )

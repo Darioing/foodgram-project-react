@@ -9,6 +9,5 @@ class BaseModelViewSet(viewsets.GenericViewSet,
 class RecipeModelViewSet(BaseModelViewSet,
                          mixins.DestroyModelMixin,
                          mixins.UpdateModelMixin,
-                         mixins.CreateModelMixin,
-                         mixins.RetrieveModelMixin):
+                         mixins.CreateModelMixin):
     pass
