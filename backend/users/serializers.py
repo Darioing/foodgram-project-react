@@ -49,7 +49,7 @@ class FollowRecipeSerializer(serializers.ModelSerializer):
 class ShowFollowSerializer(UserSerializer):
 
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    count_recipes = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -61,14 +61,16 @@ class ShowFollowSerializer(UserSerializer):
             'last_name',
             'is_subscribed',
             'recipes',
-            'recipes_count',
+            'count_recipes',
         ]
 
     def get_recipes(self, obj):
-        recipes = obj.recipes.all()[:settings.RECIPES_LIMIT]
-        return FollowRecipeSerializer(recipes, many=True).data
+        recipes = obj.recipes.all()
+        return FollowRecipeSerializer(
+            recipes, many=True
+        ).data
 
-    def get_recipes_count(self, obj):
+    def get_count_recipes(self, obj):
         queryset = Recipe.objects.filter(following=obj)
         return queryset.count()
 
@@ -96,7 +98,7 @@ class FollowSerializer(serializers.ModelSerializer):
             ).exists()
         ):
             raise serializers.ValidationError(
-                'Вы уже подписаны на данного пользователя')
+                'Вы уже подписаны на этого пользователя')
         elif user == following:
             raise serializers.ValidationError(
                 'Вы пытаетесь подписаться на себя'
@@ -107,7 +109,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
         following = validated_data.get('following')
         following = get_object_or_404(
-            User, pk=following.get('id')
+            User, id=following.get('id')
         )
         user = validated_data.get('user')
         return Follow.objects.create(

@@ -12,8 +12,8 @@ from users.serializers import FollowRecipeSerializer
 
 from .custom_viewsets import BaseModelViewSet, RecipeModelViewSet
 from .filters import IngredientFilter, RecipeFilter
-from .models import (Favorites, Ingredient, Purchase, Recipe,
-                     RecipeIngredient, Tag)
+from .models import (Favorites, Ingredient, Purchase, Recipe, RecipeIngredient,
+                     Tag)
 from .permissions import AdminOrAuthorOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           PurchaseSerializer, ReadRecipeSerializer,
@@ -23,58 +23,67 @@ User = get_user_model()
 
 
 class TagsViewSet(BaseModelViewSet):
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny, ]
-    pagination_class = None
 
 
 class RecipesViewSet(RecipeModelViewSet):
+
+    filter_class = RecipeFilter
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend
     ]
-    filter_class = RecipeFilter
-    pagination_class = PageNumberPagination
     permission_classes = [AdminOrAuthorOrReadOnly, ]
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
-        user = self.request.user.id
+
         queryset = Recipe.objects.all()
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
         )
         is_favorited = self.request.query_params.get('is_favorited')
-        cart = Purchase.objects.filter(
-            user=user
-        )
-        favorite = Favorites.objects.filter(
-            user=user
-        )
+        user = self.request.user.id
+        shopping_cart = Purchase.objects.filter(user=user)
+        favorite = Favorites.objects.filter(user=user)
 
         if is_in_shopping_cart == 'true':
-            queryset = queryset.filter(purchase__in=cart)
+            queryset = queryset.filter(
+                purchase__in=shopping_cart
+            )
         else:
-            queryset = queryset.exclude(purchase__in=cart)
+            queryset = queryset.exclude(
+                purchase__in=shopping_cart
+            )
         if is_favorited == 'true':
-            queryset = queryset.filter(favorites__in=favorite)
+            queryset = queryset.filter(
+                favorites__in=favorite
+            )
         else:
-            queryset = queryset.exclude(favorites__in=favorite)
+            queryset = queryset.exclude(
+                favorites__in=favorite
+            )
         return queryset.all()
 
     def get_serializer_class(self):
-        if self.request.method in ['GET']:
+
+        if self.request.method == 'GET':
             return ReadRecipeSerializer
         return RecipeSerializer
 
     @action(methods=['GET', 'DELETE'],
-            url_path='favorite', url_name='favorite',
+            url_path='favorite',
+            url_name='favorite',
             permission_classes=[permissions.IsAuthenticated],
             detail=True)
-    def favorite(self, request, pk):
-        user = request.user
+    def favorite(self, request, id):
+
         recipe = get_object_or_404(
-            Recipe, id=pk
+            Recipe, id=id
         )
+        user = request.user
         serializer = FavoriteSerializer(
             data={
                 'user': user.id,
@@ -91,62 +100,68 @@ class RecipesViewSet(RecipeModelViewSet):
                 serializer.data, status=status.HTTP_201_CREATED
             )
         favorite = get_object_or_404(
-            Favorites, user=user, recipe__id=pk
+            Favorites,
+            user=user,
+            recipe__id=id,
         )
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class IngredientsViewSet(BaseModelViewSet):
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = [AllowAny, ]
-    pagination_class = None
     filterset_class = IngredientFilter
+    permission_classes = [AllowAny, ]
 
 
 @api_view(['GET', ])
-@permission_classes([IsAuthenticated])
-def download_shopping_cart(request):
+@permission_classes([IsAuthenticated, ])
+def shopping_cart_download_function(request):
+
     user = request.user
-    cart = user.purchase_set.all()
-    buying_list = {}
-    for item in cart:
-        recipe = item.recipe
-        ingredients_in_recipe = RecipeIngredient.objects.filter(
-            recipe=recipe
+    shopping_cart = user.purchase_set.all()
+    ingredient_list = {}
+    for purchase in shopping_cart:
+        ingredients = RecipeIngredient.objects.filter(
+            recipe=purchase.recipe
         )
-        for item in ingredients_in_recipe:
-            amount = item.amount
-            name = item.ingredient.name
-            measurement_unit = item.ingredient.measurement_unit
-            if name not in buying_list:
-                buying_list[name] = {
+        for ingredient in ingredients:
+            amount = ingredient.amount
+            name = ingredient.ingredient.name
+            measurement_unit = ingredient.ingredient.measurement_unit
+            if name in ingredient_list:
+                ingredient_list[name]['amount'] = (
+                    ingredient_list[name]['amount'] + amount
+                )
+            else:
+                ingredient_list[name] = {
                     'amount': amount,
                     'measurement_unit': measurement_unit,
                 }
-            else:
-                buying_list[name]['amount'] = (
-                    buying_list[name]['amount'] + amount
-                )
-    shopping_list = []
-    for item in buying_list:
-        shopping_list.append(
-            f'{item} - {buying_list[item]["amount"]}, '
-            f'{buying_list[item]["measurement_unit"]}\n'
+    purchases = []
+    for ingredient in ingredient_list:
+        purchases.append(
+            f'{ingredient} - {ingredient_list[ingredient]["amount"]}, '
+            f'{ingredient_list[ingredient]["measurement_unit"]}\n'
         )
-    response = HttpResponse(shopping_list, 'Content-Type: text/plain')
+    response = HttpResponse(
+        purchases, 'Content-Type: text/plain'
+    )
     response['Content-Disposition'] = (
-        'attachment;' 'filename="shopping_list.txt"'
+        'attachment;' 'filename="purchases.txt"'
     )
     return response
 
 
 class ShoppingCartView(APIView):
-    permission_classes = [permissions.IsAuthenticated, ]
+
     http_method_names = ['get', 'delete']
+    permission_classes = [permissions.IsAuthenticated, ]
 
     def get(self, request, recipe_id):
+
         user = request.user
         recipe = get_object_or_404(
             Recipe, id=recipe_id
@@ -168,11 +183,11 @@ class ShoppingCartView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, recipe_id):
-        user = request.user
-        cart = get_object_or_404(
+
+        shopping_cart = get_object_or_404(
             Purchase,
-            user=user,
+            user=request.user,
             recipe__id=recipe_id,
         )
-        cart.delete()
+        shopping_cart.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

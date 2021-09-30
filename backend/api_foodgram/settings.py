@@ -133,5 +133,3 @@ DJOSER = {
     'HIDE_USERS': False,
     'USER_ID_FIELD': 'id',
 }
-
-RECIPES_LIMIT = 6

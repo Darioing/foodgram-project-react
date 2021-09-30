@@ -15,12 +15,14 @@ User = get_user_model()
 class UserViewSet(UserViewSet):
 
     @action(
-        detail=True, methods=['GET', 'DELETE'],
+        methods=['GET', 'DELETE'],
         url_path='subscribe', url_name='subscribe',
         permission_classes=[permissions.IsAuthenticated],
-    )
+        detail=True,)
     def subscribe(self, request, id):
-        following = get_object_or_404(User, id=id)
+        following = get_object_or_404(
+            User, id=id
+        )
         user = request.user
         serializer = FollowSerializer(
             data={
@@ -33,15 +35,18 @@ class UserViewSet(UserViewSet):
             serializer.save(user=user)
             serializer = ShowFollowSerializer(following)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        get_object_or_404(Follow, user=user, following__id=id).delete()
+        get_object_or_404(
+            Follow,
+            user=user,
+            following__id=id,
+        ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(
-        detail=False, methods=['GET'],
-        url_path='subscriptions', url_name='subscriptions',
-        permission_classes=[permissions.IsAuthenticated],
-    )
-    def show_follows(self, request):
+    @action(methods=['GET', ],
+            url_path='subscriptions', url_name='subscriptions',
+            permission_classes=[permissions.IsAuthenticated],
+            detail=False,)
+    def show_follow(self, request):
         user = request.user
         queryset = User.objects.filter(following__user=user)
         paginator = PageNumberPagination()
