@@ -91,7 +91,9 @@ class RecipesViewSet(RecipeModelViewSet):
                 serializer.data, status=status.HTTP_201_CREATED
             )
         favorite = get_object_or_404(
-            Favorites, user=user, recipe__id=id
+            Favorites,
+            user=user,
+            recipe__id=id
         )
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

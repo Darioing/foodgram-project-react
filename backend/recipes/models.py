@@ -6,6 +6,22 @@ from django.db import models
 User = get_user_model()
 
 
+class Ingredient(models.Model):
+    """
+    Модель ингредиентов
+    """
+
+    name = models.CharField(
+        max_length=200,
+        verbose_name='Ингредиент',
+        help_text='Введите название ингредиента'
+    )
+    measurement_unit = models.CharField(
+        max_length=20,
+        verbose_name='Единица измерения',
+        help_text='Выберите единицу измерения',
+    )
+
 class Tag(models.Model):
     """
     Модель тэгов
@@ -28,23 +44,6 @@ class Tag(models.Model):
         max_length=200,
         unique=True,
         null=True,
-    )
-
-
-class Ingredient(models.Model):
-    """
-    Модель ингредиентов
-    """
-
-    name = models.CharField(
-        max_length=200,
-        verbose_name='Ингредиент',
-        help_text='Введите название ингредиента'
-    )
-    measurement_unit = models.CharField(
-        max_length=20,
-        verbose_name='Единица измерения',
-        help_text='Выберите единицу измерения',
     )
 
 
@@ -87,6 +86,30 @@ class Recipe(models.Model):
     )
 
 
+class Purchase(models.Model):
+    """
+    Модель покупок
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE,
+    )
+
+    class Meta:
+            constraints = [
+                models.UniqueConstraint(
+                    fields=[
+                        'user',
+                        'recipe',
+                    ],
+                    name='unique_shopping_cart',
+                )
+            ]
+
+
 class RecipeIngredient(models.Model):
     """
     Дополнительная модель для связи ManyToMany
@@ -110,51 +133,3 @@ class RecipeIngredient(models.Model):
             )
         ]
     )
-
-
-class Favorites(models.Model):
-    """
-    Модель избранного
-    """
-
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE
-    )
-    recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=[
-                    'user',
-                    'recipe',
-                ],
-                name='unique_favorite',
-            )
-        ]
-
-
-class Purchase(models.Model):
-    """
-    Модель покупок
-    """
-
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-    )
-    recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE,
-    )
-
-    class Meta:
-            constraints = [
-                models.UniqueConstraint(
-                    fields=[
-                        'user',
-                        'recipe',
-                    ],
-                    name='unique_shopping_cart',
-                )
-            ]
