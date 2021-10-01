@@ -4,6 +4,11 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
+    """
+    Переопределяем User Manager для запроса 
+    дополнительных полей при создании суперпользователя
+    """
+
     def create_user(
         self, email, password, username, first_name, last_name, **kwargs
     ):
@@ -38,6 +43,11 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    """
+    Переопределяем базовую модель пользователя 
+    добовлением дополнительных полей
+    """
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     objects = UserManager()
@@ -71,6 +81,10 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
+    """
+    Модель подписки
+    """
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='follower'
     )
@@ -84,3 +98,4 @@ class Follow(models.Model):
                 fields=['user', 'following'], name='unique_follow'
             ),
         ]
+    
