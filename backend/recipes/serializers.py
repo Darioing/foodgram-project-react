@@ -36,10 +36,10 @@ class FavoriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        user = data['user']['id']
-        recipe = data['recipe']['id']
+        user_id = data['user']['id']
+        recipe_id = data['recipe']['id']
         if Favorites.objects.filter(
-            user=user, recipe__id=recipe
+            user=user_id, recipe__id=recipe_id
         ).exists():
             raise serializers.ValidationError(
                 'Нельзя добавить повторно в избранное'
@@ -117,13 +117,13 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         ]
 
 
-class RecipeIngredientCreateSerializer(RecipeIngredientSerializer):
+class CreateRecipeIngredientSerializer(RecipeIngredientSerializer):
 
     id = serializers.IntegerField(write_only=True)
     amount = serializers.IntegerField(write_only=True)
 
     def validate_amount(self, amount):
-        if amount < 1:
+        if amount <= 0:
             raise serializers.ValidationError(
                 'Значение должно быть больше нуля'
             )
@@ -131,33 +131,34 @@ class RecipeIngredientCreateSerializer(RecipeIngredientSerializer):
 
     def to_representation(self, instance):
         ingredient_in_recipe = [
-            item for item in
+            ingredient for ingredient in
             RecipeIngredient.objects.filter(ingredient=instance)
         ]
         return RecipeIngredientSerializer(ingredient_in_recipe).data
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+
+    author = UserSerializer(read_only=True)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True,
     )
-    author = UserSerializer(read_only=True)
+    ingredients = CreateRecipeIngredientSerializer(many=True)
     image = Base64ImageField()
-    ingredients = RecipeIngredientCreateSerializer(many=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = [
             'id',
-            'tags',
             'author',
+            'tags',
             'ingredients',
+            'image',
             'is_favorited',
             'is_in_shopping_cart',
             'name',
-            'image',
             'text',
             'cooking_time',
         ]
@@ -167,7 +168,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         user = request.user
         if request is None or user.is_anonymous:
             return False
-        return Favorites.objects.filter(user=user, recipe=obj).exists()
+        return Favorites.objects.filter(
+            user=user, recipe=obj
+        ).exists()
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
@@ -189,7 +192,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             amount = ingredient.get('amount')
             ingredient_instance = get_object_or_404(
-                Ingredient, pk=ingredient.get('id'),
+                Ingredient, id=ingredient.get('id'),  #gresu suda
             )
             RecipeIngredient.objects.create(
                 recipe=recipe,
@@ -207,16 +210,17 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients_instance = [
             ingredient for ingredient in instance.ingredients.all()
         ]
-        for item in ingredients_data:
-            amount = item['amount']
-            ingredient_id = item['id']
+        for ingredient in ingredients_data:
+            amount = ingredient['amount']
+            ingredient_id = ingredient['id']
             if RecipeIngredient.objects.filter(
-                    id=ingredient_id, amount=amount).exists():
+                id=ingredient_id, amount=amount
+            ).exists():
                 ingredients_instance.remove(
                     RecipeIngredient.objects.get(
-                        id=ingredient_id,
-                        amount=amount).ingredient
-                    )
+                        id=ingredient_id, amount=amount
+                    ).ingredient
+                )
             else:
                 RecipeIngredient.objects.get_or_create(
                     recipe=instance,
