@@ -110,30 +110,30 @@ class IngredientsViewSet(BaseModelViewSet):
 def shopping_cart_download_function(request):
     user = request.user
     shopping_cart = user.purchase_set.all()
-    buying_list = {}
-    for item in shopping_cart:
-        recipe = item.recipe
-        ingredients_in_recipe = RecipeIngredient.objects.filter(
+    purchases = {}
+    for buy in shopping_cart:
+        recipe = buy.recipe
+        recipe_ingredients = RecipeIngredient.objects.filter(
             recipe=recipe
         )
-        for item in ingredients_in_recipe:
-            amount = item.amount
-            name = item.ingredient.name
-            measurement_unit = item.ingredient.measurement_unit
-            if name not in buying_list:
-                buying_list[name] = {
+        for recipe_ingredient in recipe_ingredients:
+            amount = recipe_ingredient.amount
+            name = recipe_ingredient.ingredient.name
+            measurement_unit = recipe_ingredient.ingredient.measurement_unit
+            if name not in purchases:
+                purchases[name] = {
                     'amount': amount,
                     'measurement_unit': measurement_unit,
                 }
             else:
-                buying_list[name]['amount'] = (
-                    buying_list[name]['amount'] + amount
+                purchases[name]['amount'] = (
+                    purchases[name]['amount'] + amount
                 )
     shopping_list = []
-    for item in buying_list:
+    for item in purchases:
         shopping_list.append(
-            f'{item} - {buying_list[item]["amount"]}, '
-            f'{buying_list[item]["measurement_unit"]}\n'
+            f'{item} - {purchases[item]["amount"]}, '
+            f'{purchases[item]["measurement_unit"]}\n'
         )
     response = HttpResponse(shopping_list, 'Content-Type: text/plain')
     response['Content-Disposition'] = (
