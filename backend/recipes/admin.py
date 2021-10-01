@@ -34,15 +34,14 @@ class IngredientAdmin(ImportMixin, admin.ModelAdmin):
 class RecipeIngredientsAdmin(admin.ModelAdmin):
     list_display = [
         'id',
-        'ingredient',
         'recipe',
+        'ingredient',
         'amount',
     ]
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-
     list_display = [
         'id',
         'author',
@@ -55,10 +54,8 @@ class RecipeAdmin(admin.ModelAdmin):
     ]
 
 
-
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-
     list_display = [
         'name',
         'color',

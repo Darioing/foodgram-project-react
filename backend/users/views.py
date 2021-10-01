@@ -15,12 +15,19 @@ User = get_user_model()
 class UserViewSet(UserViewSet):
 
     @action(
-        detail=True, methods=['GET', 'DELETE'],
+        methods=['GET', 'DELETE'],
         url_path='subscribe', url_name='subscribe',
         permission_classes=[permissions.IsAuthenticated],
-    )
+        detail=True,)
     def subscribe(self, request, id):
+<<<<<<< HEAD
         following = get_object_or_404(User, id=id)
+=======
+        following = get_object_or_404(
+            User, id=id
+        )
+        user = request.user
+>>>>>>> 4843b895e1fda328e1429f16bb06e8fc474dbff6
         serializer = FollowSerializer(
             data={
                 'user': request.user.id,
@@ -32,6 +39,7 @@ class UserViewSet(UserViewSet):
             serializer.save(user=request.user)
             serializer = ShowFollowsSerializer(following)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+<<<<<<< HEAD
         get_object_or_404(Follow, user=request.user, following__id=id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -43,6 +51,22 @@ class UserViewSet(UserViewSet):
     def show_follows(self, request):
 
         queryset = User.objects.filter(following__user=request.user)
+=======
+        get_object_or_404(
+            Follow,
+            user=user,
+            following__id=id,
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['GET', ],
+            url_path='subscriptions', url_name='subscriptions',
+            permission_classes=[permissions.IsAuthenticated],
+            detail=False,)
+    def show_follow(self, request):
+        user = request.user
+        queryset = User.objects.filter(following__user=user)
+>>>>>>> 4843b895e1fda328e1429f16bb06e8fc474dbff6
         paginator = PageNumberPagination()
         paginator.page_size = 6
         result_page = paginator.paginate_queryset(queryset, request)

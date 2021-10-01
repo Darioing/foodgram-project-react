@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-
 from users.serializers import UserSerializer
 
 from .models import (Favorites, Ingredient, RecipeIngredients, Purchase,
@@ -76,7 +75,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         recipe = data['recipe']['id']
         if Purchase.objects.filter(user=user, recipe__id=recipe).exists():
             raise serializers.ValidationError(
-                'Вы уже добавили рецепт в корзину'
+                'Этот рецепт уже находится в вашей корзине"'
             )
         return data
 
@@ -228,8 +227,9 @@ class RecipeSerializer(serializers.ModelSerializer):
                 ingredients_instance.remove(
                     RecipeIngredients.objects.get(
                         id=ingredient_id,
-                        amount=amount).ingredient
-                    )
+                        amount=amount
+                    ).ingredient
+                )
             else:
                 RecipeIngredients.objects.get_or_create(
                     recipe=instance,

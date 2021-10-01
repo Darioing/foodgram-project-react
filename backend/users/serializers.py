@@ -49,7 +49,7 @@ class RecipeSubscriptionSerializer(serializers.ModelSerializer):
 class ShowFollowsSerializer(UserSerializer):
 
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    count_recipes = serializers.SerializerMethodField()
 
     class Meta:
 
@@ -62,16 +62,25 @@ class ShowFollowsSerializer(UserSerializer):
             'last_name',
             'is_subscribed',
             'recipes',
-            'recipes_count',
+            'count_recipes',
         ]
 
     def get_recipes(self, obj):
+<<<<<<< HEAD
 
         recipes = obj.recipes.all()[:settings.RECIPES_LIMIT]
         return RecipeSubscriptionSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
 
+=======
+        recipes = obj.recipes.all()
+        return FollowRecipeSerializer(
+            recipes, many=True
+        ).data
+
+    def get_count_recipes(self, obj):
+>>>>>>> 4843b895e1fda328e1429f16bb06e8fc474dbff6
         queryset = Recipe.objects.filter(following=obj)
         return queryset.count()
 
@@ -91,8 +100,22 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def validate_following(self, following):
 
+<<<<<<< HEAD
         if (self.context.get('request').method == 'POST'
            and self.context.get('request').user == following):
+=======
+        user = data['user']['id']
+        following = data['following']['id']
+
+        if (
+            Follow.objects.filter(
+                user=user, following__id=following
+            ).exists()
+        ):
+            raise serializers.ValidationError(
+                'Вы уже подписаны на этого пользователя')
+        elif user == following:
+>>>>>>> 4843b895e1fda328e1429f16bb06e8fc474dbff6
             raise serializers.ValidationError(
                 'Нельзя подписаться самому на себя.')
         return following
@@ -101,7 +124,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
         following = validated_data.get('following')
         following = get_object_or_404(
-            User, pk=following.get('id')
+            User, id=following.get('id')
         )
         user = validated_data.get('user')
         return Follow.objects.create(
