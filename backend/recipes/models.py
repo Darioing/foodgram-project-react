@@ -124,15 +124,15 @@ class Purchase(models.Model):
     )
 
     class Meta:
-            constraints = [
-                models.UniqueConstraint(
-                    fields=[
-                        'user',
-                        'recipe',
-                    ],
-                    name='unique_shopping_cart',
-                )
-            ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'user',
+                    'recipe',
+                ],
+                name='unique_shopping_cart',
+            )
+        ]
 
 
 class RecipeIngredient(models.Model):

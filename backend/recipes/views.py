@@ -2,7 +2,7 @@ import django_filters.rest_framework
 from django.contrib.auth import get_user_model
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -106,17 +106,17 @@ class IngredientsViewSet(BaseModelViewSet):
 
 
 @api_view(['GET', ])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, ])
 def shopping_cart_download_function(request):
     user = request.user
     shopping_cart = user.purchase_set.all()
     buying_list = {}
-    for item in shopping_cart:
-        recipe = item.recipe
-        ingredients_in_recipe = RecipeIngredient.objects.filter(
+    for purchase in shopping_cart:
+        recipe = purchase.recipe
+        recipeingredient = RecipeIngredient.objects.filter(
             recipe=recipe
         )
-        for item in ingredients_in_recipe:
+        for item in recipeingredient:
             amount = item.amount
             name = item.ingredient.name
             measurement_unit = item.ingredient.measurement_unit
@@ -129,15 +129,15 @@ def shopping_cart_download_function(request):
                 buying_list[name]['amount'] = (
                     buying_list[name]['amount'] + amount
                 )
-    shopping_list = []
+    ingredient_list = []
     for item in buying_list:
-        shopping_list.append(
+        ingredient_list.append(
             f'{item} - {buying_list[item]["amount"]}, '
             f'{buying_list[item]["measurement_unit"]}\n'
         )
-    response = HttpResponse(shopping_list, 'Content-Type: text/plain')
+    response = HttpResponse(ingredient_list, 'Content-Type: text/plain')
     response['Content-Disposition'] = (
-        'attachment;' 'filename="shopping_list.txt"'
+        'attachment;' 'filename="ingredient_list.txt"'
     )
     return response
 

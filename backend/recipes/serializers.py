@@ -96,7 +96,7 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = [
             'id',
-            'name', 
+            'name',
             'measurement_unit',
         ]
 

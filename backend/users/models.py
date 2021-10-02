@@ -5,7 +5,7 @@ from django.db import models
 
 class UserManager(BaseUserManager):
     """
-    Переопределяем User Manager для запроса 
+    Переопределяем User Manager для запроса
     дополнительных полей при создании суперпользователя
     """
 
@@ -44,7 +44,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
     """
-    Переопределяем базовую модель пользователя 
+    Переопределяем базовую модель пользователя
     добовлением дополнительных полей
     """
 
@@ -106,4 +106,3 @@ class Follow(models.Model):
                 name='unique_follow'
             ),
         ]
-    
