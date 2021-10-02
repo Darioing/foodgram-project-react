@@ -143,8 +143,9 @@ def shopping_cart_download_function(request):
 
 
 class ShoppingCartView(APIView):
-    permission_classes = [permissions.IsAuthenticated, ]
+
     http_method_names = ['get', 'delete']
+    permission_classes = [permissions.IsAuthenticated, ]
 
     def get(self, request, recipe_id):
         user = request.user
@@ -165,7 +166,9 @@ class ShoppingCartView(APIView):
             recipe=recipe, user=request.user
         )
         serializer = FollowRecipeSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED
+        )
 
     def delete(self, request, recipe_id):
         user = request.user

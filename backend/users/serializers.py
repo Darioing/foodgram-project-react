@@ -30,7 +30,9 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Follow.objects.filter(user=request.user, following=obj).exists()
+        return Follow.objects.filter(
+            user=request.user, following=obj
+        ).exists()
 
 
 class FollowRecipeSerializer(serializers.ModelSerializer):
@@ -65,7 +67,9 @@ class ShowFollowSerializer(UserSerializer):
 
     def get_recipes(self, obj):
         recipes = Recipe.objects.filter(author=obj)
-        return FollowRecipeSerializer(recipes, many=True).data
+        return FollowRecipeSerializer(
+            recipes, many=True
+        ).data
 
     def get_recipes_count(self, obj):
         queryset = Recipe.objects.filter(author=obj)

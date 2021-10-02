@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ImportMixin
 
-from .models import Favorites, Ingredient, RecipeIngredient, Recipe, Tag
+from .models import Favorites, Ingredient, Recipe, RecipeIngredient, Tag
 from .resources import IngredientResource
 
 
@@ -30,16 +30,6 @@ class IngredientAdmin(ImportMixin, admin.ModelAdmin):
     resource_class = IngredientResource
 
 
-@admin.register(RecipeIngredient)
-class RecipeIngredientAdmin(admin.ModelAdmin):
-    list_display = [
-        'id',
-        'recipe',
-        'ingredient',
-        'amount',
-    ]
-
-
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = [
@@ -51,6 +41,16 @@ class RecipeAdmin(admin.ModelAdmin):
         'author',
         'name',
         'tags',
+    ]
+
+
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',
+        'recipe',
+        'ingredient',
+        'amount',
     ]
 
 

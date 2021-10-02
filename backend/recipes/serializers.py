@@ -70,7 +70,9 @@ class PurchaseSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = data['user']['id']
         recipe = data['recipe']['id']
-        if Purchase.objects.filter(user=user, recipe__id=recipe).exists():
+        if Purchase.objects.filter(
+            user=user, recipe__id=recipe
+        ).exists():
             raise serializers.ValidationError(
                 'Вы уже добавили рецепт в корзину'
             )

@@ -31,8 +31,14 @@ class UserViewSet(UserViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save(user=request.user)
             serializer = ShowFollowSerializer(following)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        get_object_or_404(Follow, user=request.user, following__id=id).delete()
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED
+            )
+        get_object_or_404(
+            Follow,
+            user=request.user,
+            following__id=id
+        ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(

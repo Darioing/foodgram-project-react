@@ -87,31 +87,6 @@ class Recipe(models.Model):
     )
 
 
-class RecipeIngredient(models.Model):
-    """
-    Дополнительная модель для связи ManyToMany
-    ингредиентов рецепта
-    """
-
-    ingredient = models.ForeignKey(
-        Ingredient,
-        on_delete=models.CASCADE,
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-    )
-    amount = models.PositiveSmallIntegerField(
-        verbose_name='Количество ингредиента',
-        default=1,
-        validators=[
-            MinValueValidator(
-                1, 'Значение не может быть меньше 1'
-            )
-        ]
-    )
-
-
 class Favorites(models.Model):
     """
     Модель избранного
@@ -158,3 +133,28 @@ class Purchase(models.Model):
                     name='unique_shopping_cart',
                 )
             ]
+
+
+class RecipeIngredient(models.Model):
+    """
+    Дополнительная модель для связи ManyToMany
+    ингредиентов рецепта
+    """
+
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+    )
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество ингредиента',
+        default=1,
+        validators=[
+            MinValueValidator(
+                1, 'Значение не может быть меньше 1'
+            )
+        ]
+    )
