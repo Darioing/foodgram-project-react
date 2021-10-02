@@ -1,6 +1,7 @@
 # Дипломный проект курса Python-разработчик от Яндекс.Практикума
 ### Описание
 Данный проект выполняется для курса Python-разработчик от Яндекс.Практикума
+
 [![Django-app workflow](https://github.com/Darioing/foodgram-project-react/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/Darioing/foodgram-project-react/actions/workflows/main.yml)
 ### Технологии
 В проекте используются:
