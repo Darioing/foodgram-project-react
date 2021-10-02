@@ -165,20 +165,18 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        user = request.user
-        if request is None or user.is_anonymous:
+        if request is None or request.user.is_anonymous:
             return False
         return Favorites.objects.filter(
-            user=user, recipe=obj
+            user=request.user, recipe=obj
         ).exists()
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
-        user = request.user
-        if request is None or user.is_anonymous:
+        if request is None or request.user.is_anonymous:
             return False
         return Purchase.objects.filter(
-            user=user, recipe=obj
+            user=request.user, recipe=obj
         ).exists()
 
     def create(self, validated_data):
@@ -192,7 +190,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             amount = ingredient.get('amount')
             ingredient_instance = get_object_or_404(
-                Ingredient, id=ingredient.get('id'),  #gresu suda
+                Ingredient, pk=ingredient.get('id'),
             )
             RecipeIngredient.objects.create(
                 recipe=recipe,

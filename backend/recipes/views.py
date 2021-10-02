@@ -38,17 +38,16 @@ class RecipesViewSet(RecipeModelViewSet):
     permission_classes = [AdminOrAuthorOrReadOnly, ]
 
     def get_queryset(self):
-        user = self.request.user.id
         queryset = Recipe.objects.all()
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
         )
         is_favorited = self.request.query_params.get('is_favorited')
         shopping_cart = Purchase.objects.filter(
-            user=user
+            user=self.request.user.id
         )
         favorite = Favorites.objects.filter(
-            user=user
+            user=self.request.user.id
         )
 
         if is_in_shopping_cart == 'true':
@@ -70,28 +69,29 @@ class RecipesViewSet(RecipeModelViewSet):
             url_path='favorite', url_name='favorite',
             permission_classes=[permissions.IsAuthenticated],
             detail=True)
-    def favorite(self, request, id):
-        user = request.user
+    def favorite(self, request, pk):
         recipe = get_object_or_404(
-            Recipe, id=id
+            Recipe, id=pk
         )
         serializer = FavoriteSerializer(
             data={
-                'user': user.id,
+                'user': request.user.id,
                 'recipe': recipe.id,
             }
         )
         if request.method == 'GET':
             serializer.is_valid(raise_exception=True)
             serializer.save(
-                recipe=recipe, user=user
+                recipe=recipe, user=request.user
             )
             serializer = FollowRecipeSerializer(recipe)
             return Response(
                 serializer.data, status=status.HTTP_201_CREATED
             )
         favorite = get_object_or_404(
-            Favorites, user=user, recipe__id=id
+            Favorites,
+            user=request.user,
+            recipe__id=pk
         )
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -162,7 +162,7 @@ class ShoppingCartView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(
-            recipe=recipe, user=user
+            recipe=recipe, user=request.user
         )
         serializer = FollowRecipeSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
