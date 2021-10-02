@@ -86,6 +86,27 @@ class Recipe(models.Model):
     )
 
 
+class Favorites(models.Model):
+    """
+    Модель избранного
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+
+    class Meta:
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'user',
+                    'recipe',
+                ],
+                name='unique_favorite',
+            )
+        ]
+
+
 class Purchase(models.Model):
     """
     Модель покупок
