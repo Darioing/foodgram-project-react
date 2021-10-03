@@ -1,11 +1,12 @@
 from django.contrib import admin
+
 from import_export.admin import ImportMixin
 
-from .models import Favorites, Ingredient, Recipe, RecipeIngredient, Tag
+from .models import Favorite, Ingredient, Recipe, RecipeIngredient, Tag
 from .resources import IngredientResource
 
 
-@admin.register(Favorites)
+@admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = [
         'id',

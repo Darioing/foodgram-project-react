@@ -1,7 +1,8 @@
-import django_filters.rest_framework
 from django.contrib.auth import get_user_model
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
+
+import django_filters.rest_framework
 from rest_framework import permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
@@ -12,7 +13,7 @@ from users.serializers import FollowRecipeSerializer
 
 from .custom_viewsets import BaseModelViewSet, RecipeModelViewSet
 from .filters import IngredientFilter, RecipeFilter
-from .models import (Favorites, Ingredient, Purchase, Recipe, RecipeIngredient,
+from .models import (Favorite, Ingredient, Purchase, Recipe, RecipeIngredient,
                      Tag)
 from .permissions import AdminOrAuthorOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
@@ -46,7 +47,7 @@ class RecipesViewSet(RecipeModelViewSet):
         shopping_cart = Purchase.objects.filter(
             user=self.request.user.id
         )
-        favorite = Favorites.objects.filter(
+        user_favorite = Favorite.objects.filter(
             user=self.request.user.id
         )
 
@@ -55,9 +56,9 @@ class RecipesViewSet(RecipeModelViewSet):
         else:
             queryset = queryset.exclude(purchase__in=shopping_cart)
         if is_favorited == 'true':
-            queryset = queryset.filter(favorites__in=favorite)
+            queryset = queryset.filter(favorite__in=user_favorite)
         else:
-            queryset = queryset.exclude(favorites__in=favorite)
+            queryset = queryset.exclude(favorite__in=user_favorite)
         return queryset.all()
 
     def get_serializer_class(self):
@@ -89,7 +90,7 @@ class RecipesViewSet(RecipeModelViewSet):
                 serializer.data, status=status.HTTP_201_CREATED
             )
         favorite = get_object_or_404(
-            Favorites,
+            Favorite,
             user=request.user,
             recipe__id=pk
         )

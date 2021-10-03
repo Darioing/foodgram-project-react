@@ -1,7 +1,8 @@
-from colorfield.fields import ColorField
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+
+from colorfield.fields import ColorField
 
 User = get_user_model()
 
@@ -30,6 +31,10 @@ class Tag(models.Model):
         null=True,
     )
 
+    class Meta:
+        verbose_name = 'Tag'
+        verbose_name_plural = 'Tags'
+
 
 class Ingredient(models.Model):
     """
@@ -46,6 +51,10 @@ class Ingredient(models.Model):
         verbose_name='Единица измерения',
         help_text='Выберите единицу измерения',
     )
+
+    class Meta:
+        verbose_name = 'Ingredient'
+        verbose_name_plural = 'Ingredients'
 
 
 class Recipe(models.Model):
@@ -86,8 +95,12 @@ class Recipe(models.Model):
         verbose_name='Теги',
     )
 
+    class Meta:
+        verbose_name = 'Recipe'
+        verbose_name_plural = 'Recipes'
 
-class Favorites(models.Model):
+
+class Favorite(models.Model):
     """
     Модель избранного
     """
@@ -100,6 +113,8 @@ class Favorites(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Favorite'
+        verbose_name_plural = 'Favorites'
         constraints = [
             models.UniqueConstraint(
                 fields=[
@@ -124,6 +139,8 @@ class Purchase(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Purchase'
+        verbose_name_plural = 'Purchases'
         constraints = [
             models.UniqueConstraint(
                 fields=[
@@ -158,3 +175,7 @@ class RecipeIngredient(models.Model):
             )
         ]
     )
+
+    class Meta:
+        verbose_name = 'Recipe Ingredient'
+        verbose_name_plural = 'Recipe Ingredients'

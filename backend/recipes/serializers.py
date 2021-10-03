@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from users.serializers import UserSerializer
 
-from .models import (Favorites, Ingredient, Purchase, Recipe, RecipeIngredient,
+from .models import (Favorite, Ingredient, Purchase, Recipe, RecipeIngredient,
                      Tag)
 
 User = get_user_model()
@@ -28,7 +29,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
     recipe = serializers.IntegerField(source='recipe.id')
 
     class Meta:
-        model = Favorites
+        model = Favorite
         fields = [
             'user',
             'recipe',
@@ -37,7 +38,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user_id = data['user']['id']
         recipe_id = data['recipe']['id']
-        if Favorites.objects.filter(
+        if Favorite.objects.filter(
             user=user_id, recipe__id=recipe_id
         ).exists():
             raise serializers.ValidationError(
@@ -48,7 +49,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = validated_data['user']
         recipe = validated_data['recipe']
-        Favorites.objects.get_or_create(
+        Favorite.objects.get_or_create(
             user=user, recipe=recipe
         )
         return validated_data
@@ -168,7 +169,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Favorites.objects.filter(
+        return Favorite.objects.filter(
             user=request.user, recipe=obj
         ).exists()
 
