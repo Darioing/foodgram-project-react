@@ -46,14 +46,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
             )
         return data
 
-    def create(self, validated_data):
-        user = validated_data['user']
-        recipe = validated_data['recipe']
-        Favorite.objects.get_or_create(
-            user=user, recipe=recipe
-        )
-        return validated_data
-
 
 class PurchaseSerializer(serializers.ModelSerializer):
 
@@ -68,23 +60,15 @@ class PurchaseSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        user = data['user']['id']
-        recipe = data['recipe']['id']
+        user_id = data['user']['id']
+        recipe_id = data['recipe']['id']
         if Purchase.objects.filter(
-            user=user, recipe__id=recipe
+            user=user_id, recipe__id=recipe_id
         ).exists():
             raise serializers.ValidationError(
                 'Вы уже добавили рецепт в корзину'
             )
         return data
-
-    def create(self, validated_data):
-        user = validated_data['user']
-        recipe = validated_data['recipe']
-        Purchase.objects.get_or_create(
-            user=user, recipe=recipe
-        )
-        return validated_data
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -102,6 +86,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
+
     name = serializers.ReadOnlyField(
         source='ingredient.name'
     )
@@ -121,15 +106,8 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 class CreateRecipeIngredientSerializer(RecipeIngredientSerializer):
 
-    id = serializers.IntegerField(write_only=True)
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all(), many=True)
     amount = serializers.IntegerField(write_only=True)
-
-    def validate_amount(self, amount):
-        if amount <= 0:
-            raise serializers.ValidationError(
-                'Значение должно быть больше нуля'
-            )
-        return amount
 
     def to_representation(self, instance):
         ingredient_in_recipe = [
@@ -181,38 +159,46 @@ class RecipeSerializer(serializers.ModelSerializer):
             user=request.user, recipe=obj
         ).exists()
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        ingredients = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')
-        recipe = Recipe.objects.create(
-            author=request.user, **validated_data
-        )
-        recipe.tags.set(tags_data)
-        for ingredient in ingredients:
-            amount = ingredient.get('amount')
-            ingredient_instance = get_object_or_404(
-                Ingredient, pk=ingredient.get('id'),
+    def validate_ingredients(self, value):
+        ingredients = self.initial_data.get('ingredients')
+        if len(ingredients) < 1:
+            raise serializers.ValidationError(
+                'Вы должны выбрать хотя бы один ингредиент'
             )
-            RecipeIngredient.objects.create(
-                recipe=recipe,
-                ingredient=ingredient_instance,
-                amount=amount,
-            )
-        recipe.save()
-        return recipe
+        return value
 
-    def update(self, instance, validated_data):
-        ingredients_data = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')
-        recipe = Recipe.objects.filter(id=instance.id)
-        recipe.update(**validated_data)
-        ingredients_instance = [
-            ingredient for ingredient in instance.ingredients.all()
-        ]
+    def validate_tags(self, data):
+        tags = self.initial_data.get('tags')
+        if len(tags) < 1:
+            raise serializers.ValidationError(
+                'Вы должны указать хотя бы один тег'
+            )
+
+    def create_or_update_cycle(self, recipe, ingredients_data):
+        """
+        Добавлю небольшой комментарий, проверка на
+        отрицательный вес ингредиента выполняется полем
+        amount модели RecipeIngredient т.к. оно 
+        PositiveSmallIntegerField(выяснили в треде слака)
+        тоже самое с cooking_time => не добавлял проверку
+        """
+        ingredients_instance = RecipeIngredient.objects.values_list(
+            'id', 'amount', 
+        )
+        repeated_ingredient = []
         for ingredient in ingredients_data:
+            if ingredient not in repeated_ingredient:  # проверка на повтор
+                repeated_ingredient.append(ingredient)
+            else:
+                raise serializers.ValidationError(
+                    'Ингредиенты не должны повторяться'
+                )
             amount = ingredient['amount']
             ingredient_id = ingredient['id']
+            ingredient_instance = get_object_or_404(
+                Ingredient, id=ingredient_id
+            )
+            
             if RecipeIngredient.objects.filter(
                 id=ingredient_id, amount=amount
             ).exists():
@@ -223,12 +209,35 @@ class RecipeSerializer(serializers.ModelSerializer):
                 )
             else:
                 RecipeIngredient.objects.get_or_create(
-                    recipe=instance,
-                    ingredient=get_object_or_404(
-                        Ingredient, id=ingredient_id
-                    ),
+                    recipe=recipe,
+                    ingredient=ingredient_instance,
                     amount=amount
                 )
+        
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        ingredients_data = validated_data.pop('ingredients')
+        tags_data = validated_data.pop('tags')
+        recipe = Recipe.objects.create(
+            author=request.user, **validated_data
+        )
+        recipe.tags.set(tags_data)
+        self.create_or_update_cycle(
+            self, recipe, ingredients_data
+        )
+        recipe.save()
+        return recipe
+
+    def update(self, instance, validated_data):
+        ingredients_data = validated_data.pop('ingredients')
+        tags_data = validated_data.pop('tags')
+        recipe = Recipe.objects.filter(id=instance.id)
+        recipe.update(**validated_data)
+        ingredients_instance = RecipeIngredient.objects.values_list(
+            'id', 'amount', 
+        )
+        RecipeSerializer.create_or_update_cycle(self, recipe, ingredients_data)
         if validated_data.get('image') is not None:
             instance.image = validated_data.get(
                 'image', instance.image
