@@ -86,7 +86,9 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-
+    id = serializers.ReadOnlyField(
+        source='ingredient.id'
+    )
     name = serializers.ReadOnlyField(
         source='ingredient.name'
     )
@@ -95,6 +97,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+
         model = RecipeIngredient
         fields = [
             'id',
@@ -105,9 +108,10 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class CreateRecipeIngredientSerializer(RecipeIngredientSerializer):
-
-    id = serializers.IntegerField(write_only=True)
-    amount = serializers.IntegerField(write_only=True)
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all()
+    )
+    amount = serializers.IntegerField()
 
     def to_representation(self, instance):
         ingredient_in_recipe = [
