@@ -31,8 +31,8 @@ class Tag(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Tag'
-        verbose_name_plural = 'Tags'
+        verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
 
 
 class Ingredient(models.Model):
@@ -52,8 +52,8 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Ingredient'
-        verbose_name_plural = 'Ingredients'
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
 
 
 class Recipe(models.Model):
@@ -95,8 +95,8 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Recipe'
-        verbose_name_plural = 'Recipes'
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
 
 class Favorite(models.Model):
@@ -105,15 +105,19 @@ class Favorite(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь',
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт',
     )
 
     class Meta:
-        verbose_name = 'Favorite'
-        verbose_name_plural = 'Favorites'
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         constraints = [
             models.UniqueConstraint(
                 fields=[
@@ -131,15 +135,19 @@ class Purchase(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь',
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE,
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт',
     )
 
     class Meta:
-        verbose_name = 'Purchase'
-        verbose_name_plural = 'Purchases'
+        verbose_name = 'Покупка'
+        verbose_name_plural = 'Покупки'
         constraints = [
             models.UniqueConstraint(
                 fields=[
@@ -160,10 +168,12 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
+        verbose_name='Игредиент',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        verbose_name='Рецепт',
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента',
@@ -176,5 +186,5 @@ class RecipeIngredient(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Recipe Ingredient'
-        verbose_name_plural = 'Recipe Ingredients'
+        verbose_name = 'Ингредиент рецепта'
+        verbose_name_plural = 'Ингредиенты рецепта'

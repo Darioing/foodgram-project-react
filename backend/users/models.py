@@ -55,13 +55,13 @@ class User(AbstractUser):
         max_length=150,
         blank=True,
         verbose_name='Имя',
-        help_text='Введите ваше Имя'
+        help_text='Введите ваше Имя',
     )
     last_name = models.CharField(
         max_length=150,
         blank=True,
         verbose_name='Фамилия',
-        help_text='Введите вашу Фамилию'
+        help_text='Введите вашу Фамилию',
     )
     username = models.CharField(
         max_length=150,
@@ -88,12 +88,14 @@ class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='follower'
+        verbose_name='Подписчик',
+        related_name='follower',
     )
     following = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='following'
+        verbose_name='Пользователь',
+        related_name='following',
     )
 
     class Meta:
