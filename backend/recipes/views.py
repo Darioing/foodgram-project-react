@@ -37,29 +37,7 @@ class RecipesViewSet(RecipeModelViewSet):
     filter_class = RecipeFilter
     pagination_class = PageNumberPagination
     permission_classes = [AdminOrAuthorOrReadOnly, ]
-
-    def get_queryset(self):
-        queryset = Recipe.objects.all()
-        is_in_shopping_cart = self.request.query_params.get(
-            'is_in_shopping_cart'
-        )
-        is_favorited = self.request.query_params.get('is_favorited')
-        shopping_cart = Purchase.objects.filter(
-            user=self.request.user.id
-        )
-        user_favorite = Favorite.objects.filter(
-            user=self.request.user.id
-        )
-
-        if is_in_shopping_cart == 'true':
-            queryset = queryset.filter(purchase__in=shopping_cart)
-        else:
-            queryset = queryset.exclude(purchase__in=shopping_cart)
-        if is_favorited == 'true':
-            queryset = queryset.filter(favorite__in=user_favorite)
-        else:
-            queryset = queryset.exclude(favorite__in=user_favorite)
-        return queryset.all()
+    queryset = Recipe.objects.all()
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
