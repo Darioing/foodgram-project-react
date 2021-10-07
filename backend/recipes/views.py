@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 
@@ -90,24 +91,24 @@ def shopping_cart_download_function(request):
     user = request.user
     shopping_cart = user.purchase_set.all()
     buying_list = {}
-    for purchase in shopping_cart:
-        recipe = purchase.recipe
-        recipeingredient = RecipeIngredient.objects.filter(
-            recipe=recipe
-        )
-        for item in recipeingredient:
-            amount = item.amount
-            name = item.ingredient.name
-            measurement_unit = item.ingredient.measurement_unit
-            if name not in buying_list:
-                buying_list[name] = {
-                    'amount': amount,
-                    'measurement_unit': measurement_unit,
-                }
-            else:
-                buying_list[name]['amount'] = (
-                    buying_list[name]['amount'] + amount
-                )
+    ingredients = RecipeIngredient.objects.filter(
+        recipe__author=request.user
+    ).values_list(
+                'ingredient__name', 'amount', 'ingredient__measurement_unit'
+            )
+    ingredients = ingredients.values(
+        'ingredient__name', 'ingredient__measurement_unit'
+    ).annotate(total_amount=Sum('amount'))
+
+    for ingredient in ingredients:
+        amount = ingredient['total_amount']
+        name = ingredient['ingredient__name']
+        measurement_unit = ingredient['ingredient__measurement_unit']
+        buying_list[name] = {
+            'amount': amount,
+            'measurement_unit': measurement_unit,
+        }
+
     ingredient_list = []
     for item in buying_list:
         ingredient_list.append(
