@@ -1,17 +1,16 @@
+import django_filters.rest_framework
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
-
-import django_filters.rest_framework
 from rest_framework import permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from users.serializers import FollowRecipeSerializer
 
+from users.serializers import FollowRecipeSerializer
 from .custom_viewsets import BaseModelViewSet, RecipeModelViewSet
 from .filters import IngredientFilter, RecipeFilter
 from .models import (Favorite, Ingredient, Purchase, Recipe, RecipeIngredient,
@@ -88,14 +87,12 @@ class IngredientsViewSet(BaseModelViewSet):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 def shopping_cart_download_function(request):
-    user = request.user
-    shopping_cart = user.purchase_set.all()
     buying_list = {}
     ingredients = RecipeIngredient.objects.filter(
         recipe__author=request.user
     ).values_list(
-                'ingredient__name', 'amount', 'ingredient__measurement_unit'
-            )
+        'ingredient__name', 'amount', 'ingredient__measurement_unit'
+    )
     ingredients = ingredients.values(
         'ingredient__name', 'ingredient__measurement_unit'
     ).annotate(total_amount=Sum('amount'))

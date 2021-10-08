@@ -1,6 +1,6 @@
 import django_filters as filters
 
-from .models import Ingredient, Recipe, Purchase, Favorite
+from .models import Favorite, Ingredient, Purchase, Recipe
 
 
 class IngredientFilter(filters.FilterSet):
@@ -29,7 +29,6 @@ class RecipeFilter(filters.FilterSet):
     is_in_shopping_cart = filters.BooleanFilter(
         method='get_in_shopping_cart'
     )
-    
 
     def get_favorite(self, queryset, name, value):
         user_favorite = Favorite.objects.filter(

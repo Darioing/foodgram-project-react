@@ -1,10 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
-
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from users.serializers import UserSerializer
 
+from users.serializers import UserSerializer
 from .models import (Favorite, Ingredient, Purchase, Recipe, RecipeIngredient,
                      Tag)
 
@@ -190,6 +188,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Количество ингредиента не должно быть меньше одного'
                 )
+        self.unique_validator(value)
         return value
 
     def unique_validator(self, value):
@@ -212,7 +211,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             if not created:
                 obj.amount += amount
                 obj.save()
-        
 
     def create(self, validated_data):
         request = self.context.get('request')
