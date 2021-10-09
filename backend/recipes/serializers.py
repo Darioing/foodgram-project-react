@@ -188,7 +188,6 @@ class RecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Количество ингредиента не должно быть меньше одного'
                 )
-        self.unique_validator(value)
         return value
 
     def unique_validator(self, value):
