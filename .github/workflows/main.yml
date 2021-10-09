@@ -63,6 +63,7 @@ jobs:
             sudo docker-compose rm backend
             sudo rm .env
             touch .env
+            echo SECRET_KEY_DJANGO=${{ secrets.SECRET_KEY_DJANGO }} >> .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
             echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
@@ -73,6 +74,7 @@ jobs:
             sudo docker-compose exec -T backend python manage.py makemigrations recipes
             sudo docker-compose exec -T backend python manage.py makemigrations users
             sudo docker-compose exec -T backend python manage.py migrate --noinput
+            sudo docker-compose exec -T backend python manage.py migrate --fake
             sudo docker-compose exec -T backend python manage.py collectstatic --no-input
 
   send_message:
