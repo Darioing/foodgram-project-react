@@ -89,15 +89,15 @@ class IngredientsViewSet(BaseModelViewSet):
 def shopping_cart_download_function(request):
     buying_list = {}
     ingredients = RecipeIngredient.objects.filter(
-        recipe__author=request.user
+        recipe__recipes_in_cart__user=request.user
     ).values_list(
         'ingredient__name', 'amount', 'ingredient__measurement_unit'
     )
-    ingredients = ingredients.values(
+    ingredients_annotate = ingredients.values(
         'ingredient__name', 'ingredient__measurement_unit'
     ).annotate(total_amount=Sum('amount'))
 
-    for ingredient in ingredients:
+    for ingredient in ingredients_annotate:
         amount = ingredient['total_amount']
         name = ingredient['ingredient__name']
         measurement_unit = ingredient['ingredient__measurement_unit']
@@ -123,7 +123,6 @@ class ShoppingCartView(APIView):
 
     http_method_names = ['get', 'delete']
     permission_classes = [permissions.IsAuthenticated, ]
-    pagination_class = None
 
     def get(self, request, recipe_id):
         user = request.user

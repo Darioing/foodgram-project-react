@@ -47,8 +47,8 @@ class RecipeFilter(filters.FilterSet):
             'is_in_shopping_cart'
         )
         if is_in_shopping_cart == 'true':
-            return queryset.filter(purchase__in=shopping_cart)
-        return queryset.exclude(purchase__in=shopping_cart)
+            return queryset.filter(recipes_in_cart__in=shopping_cart)
+        return queryset.exclude(recipes_in_cart__in=shopping_cart)
 
     class Meta:
         model = Recipe
