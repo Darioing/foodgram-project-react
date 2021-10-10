@@ -5,11 +5,11 @@ from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .custom_pagination import CustomPageNumberPaginator
 from users.serializers import FollowRecipeSerializer
 from .custom_viewsets import BaseModelViewSet, RecipeModelViewSet
 from .filters import IngredientFilter, RecipeFilter
@@ -35,7 +35,7 @@ class RecipesViewSet(RecipeModelViewSet):
         django_filters.rest_framework.DjangoFilterBackend
     ]
     filter_class = RecipeFilter
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPageNumberPaginator
     permission_classes = [AdminOrAuthorOrReadOnly, ]
     queryset = Recipe.objects.all()
 
@@ -123,6 +123,7 @@ class ShoppingCartView(APIView):
 
     http_method_names = ['get', 'delete']
     permission_classes = [permissions.IsAuthenticated, ]
+    pagination_class = None
 
     def get(self, request, recipe_id):
         user = request.user

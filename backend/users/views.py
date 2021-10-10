@@ -3,16 +3,18 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import permissions, status
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from recipes.custom_pagination import CustomPageNumberPaginator
 from .models import Follow
-from .serializers import FollowSerializer, ShowFollowSerializer
+from .serializers import FollowSerializer, ShowFollowSerializer, UserSerializer
 
 User = get_user_model()
 
 
 class UserViewSet(UserViewSet):
+
+    serializer_class = UserSerializer
 
     @action(
         detail=True, methods=['GET', 'DELETE'],
@@ -48,7 +50,7 @@ class UserViewSet(UserViewSet):
     )
     def show_follows(self, request):
         queryset = User.objects.filter(following__user=request.user)
-        paginator = PageNumberPagination()
+        paginator = CustomPageNumberPaginator
         paginator.page_size = 6
         page = paginator.paginate_queryset(queryset, request)
         serializer = ShowFollowSerializer(
